@@ -7,7 +7,7 @@ import flash.events.EventDispatcher;
 import flash.Lib;
 import haxe.Json;
 
-import openfl.utils.JNI;
+import lime.system.JNI;
 
 /**
  * Provides convenience methods and properties for in-app purchases (Android & iOS).
@@ -230,22 +230,38 @@ private class IAPHandler {
 	public static var lastPurchaseRequest:String = "";
 	public static var androidAvailable:Bool = true;
 
+	public var onCanceledPurchase:Dynamic;
+	public var onFailedConsume:Dynamic;
+	public var onConsume:Dynamic;
+	public var onFailedPurchase:Dynamic;
+	public var onPurchase:Dynamic;
+	public var onQueryInventoryComplete:Dynamic;
+	public var onStarted:Dynamic;
+
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function new () { }
+	public function new () {
+		onCanceledPurchase = handleCanceledPurchase;
+		onFailedConsume = handleFailedConsume;
+		onConsume = handleConsume;
+		onFailedPurchase = handleFailedPurchase;
+		onPurchase = handleCanceledPurchase;
+		onQueryInventoryComplete = handleQueryInventoryComplete;
+		onStarted = handleStarted;
+	 }
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function onCanceledPurchase (productID:String):Void {
+	public function handleCanceledPurchase (productID:String):Void {
 		IAP.dispatcher.dispatchEvent (new IAPEvent (IAPEvent.PURCHASE_CANCEL, productID));
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function onFailedConsume (response:String):Void {
+	public function handleFailedConsume (response:String):Void {
 		var productID:String = "";
 
 		productID = lastPurchaseRequest; //temporal fix
@@ -260,7 +276,7 @@ private class IAPHandler {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function onConsume (response:String):Void {
+	public function handleConsume (response:String):Void {
 		var productID:String = "";
 
 		productID = lastPurchaseRequest; //temporal fix
@@ -274,7 +290,7 @@ private class IAPHandler {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function onFailedPurchase (response:String):Void {
+	public function handleFailedPurchase (response:String):Void {
 		var productID:String = "";
 
 		productID = lastPurchaseRequest; //temporal fix
@@ -289,7 +305,7 @@ private class IAPHandler {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function onPurchase (response:String, itemType:String, signature:String):Void {
+	public function handlePurchase (response:String, itemType:String, signature:String):Void {
 		var evt:IAPEvent = new IAPEvent (IAPEvent.PURCHASE_SUCCESS);
 
 		evt.purchase = new Purchase(response, itemType, signature);
@@ -302,15 +318,14 @@ private class IAPHandler {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function onQueryInventoryComplete (response:String):Void {
-
+	public function handleQueryInventoryComplete (response:String):Void {
 		if (response == "Failure") {
-
+			trace("Query Inventory Failed!");
 			androidAvailable = false;
 			IAP.dispatcher.dispatchEvent (new IAPEvent (IAPEvent.PURCHASE_QUERY_INVENTORY_FAILED));
 
 		} else {
-
+			trace("Query Inventory success");
 			var dynResp:Dynamic = Json.parse(response);
 			IAP.inventory = new Inventory(dynResp);
 
@@ -334,6 +349,7 @@ private class IAPHandler {
 					prod.localizedTitle = Reflect.field(dynItmValue, "title");
 					prod.localizedDescription = Reflect.field(dynItmValue, "description");
 					evt.productsData.push(prod);
+					trace("prod: " + prod);
 				}
 			}
 
@@ -345,7 +361,7 @@ private class IAPHandler {
 	///////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////
 
-	public function onStarted (response:String):Void {
+	public function handleStarted (response:String):Void {
 		if (response == "Success") {
 			androidAvailable = true;
 			IAP.dispatcher.dispatchEvent (new IAPEvent (IAPEvent.PURCHASE_INIT));
