@@ -246,7 +246,7 @@ private class IAPHandler {
 		onFailedConsume = handleFailedConsume;
 		onConsume = handleConsume;
 		onFailedPurchase = handleFailedPurchase;
-		onPurchase = handleCanceledPurchase;
+		onPurchase = handlePurchase;
 		onQueryInventoryComplete = handleQueryInventoryComplete;
 		onStarted = handleStarted;
 	 }
