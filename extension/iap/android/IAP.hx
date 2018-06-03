@@ -3,7 +3,7 @@ package extension.iap.android;
 import extension.iap.IAP;
 import flash.errors.Error;
 import flash.events.Event;
-import flash.events.EventDispatcher;
+import extension.iap.ThreadsafeDispatcher;
 import flash.Lib;
 import haxe.Json;
 
@@ -57,7 +57,7 @@ import lime.system.JNI;
 	private static var tempProductsData:Array<IAProduct> = [];
 
 	// Event dispatcher composition
-	private static var dispatcher = new EventDispatcher ();
+	private static var dispatcher:ThreadsafeDispatcher = new ThreadsafeDispatcher();
 
 	/**
 	 * Initializes the extension.
@@ -73,13 +73,13 @@ import lime.system.JNI;
 	 */
 
 	public static function initialize (publicKey:String = ""):Void {
-
 		if (funcInit == null) {
 			funcInit = JNI.createStaticMethod ("org/haxe/extension/iap/InAppPurchase", "initialize", "(Ljava/lang/String;Lorg/haxe/lime/HaxeObject;)V");
 		}
 
 		if (inventory == null) inventory = new Inventory(null);
 		funcInit (publicKey, new IAPHandler ());
+		dispatcher.activate();
 	}
 
 	/**
@@ -97,7 +97,6 @@ import lime.system.JNI;
 	 */
 
 	public static function purchase (productID:String, devPayload:String = ""):Void {
-
 		if (funcBuy == null) {
 			funcBuy = JNI.createStaticMethod ("org/haxe/extension/iap/InAppPurchase", "buy", "(Ljava/lang/String;Ljava/lang/String;)V");
 		}
@@ -131,7 +130,6 @@ import lime.system.JNI;
 	 */
 
 	public static function consume (purchase:Purchase):Void {
-
 		if (funcConsume == null) {
 			funcConsume = JNI.createStaticMethod ("org/haxe/extension/iap/InAppPurchase", "consume", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 		}
@@ -156,7 +154,6 @@ import lime.system.JNI;
 	 */
 
 	public static function queryInventory (queryItemDetails:Bool = false, moreItems:Array<String> = null):Void {
-
 		if (funcQueryInventory == null) {
 			funcQueryInventory = JNI.createStaticMethod ("org/haxe/extension/iap/InAppPurchase", "queryInventory", "(Z[Ljava/lang/String;)V");
 		}

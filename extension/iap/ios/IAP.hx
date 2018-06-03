@@ -5,6 +5,7 @@ import extension.iap.IAP;
 import flash.errors.Error;
 import flash.events.Event;
 import flash.events.EventDispatcher;
+import extension.iap.ThreadsafeDispatcher;
 import haxe.Json;
 
 /**
@@ -58,7 +59,7 @@ import haxe.Json;
 	private static var tempProductsData:Array<IAProduct> = [];
 
 	// Event dispatcher composition
-	private static var dispatcher = new EventDispatcher ();
+	private static var dispatcher:ThreadsafeDispatcher = new ThreadsafeDispatcher ();
 
 
 	/**
@@ -85,7 +86,7 @@ import haxe.Json;
 			initialized = true;
 
 		}
-
+		dispatcher.activate();
 		purchases_initialize ();
 
 	}
