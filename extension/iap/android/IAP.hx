@@ -219,7 +219,7 @@ import lime.system.JNI;
 }
 
 
-#if (android && !display)
+#if (android)
 
 
 private class IAPHandler {
